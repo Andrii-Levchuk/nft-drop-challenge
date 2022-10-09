@@ -1,26 +1,30 @@
-import React from 'react'
-import { useAddress, useDisconnect, useMetamask } from '@thirdweb-dev/react'
+import React, { cloneElement, useEffect, useState } from 'react'
+import {
+	useAddress,
+	useDisconnect,
+	useMetamask,
+	
+} from '@thirdweb-dev/react'
 import { GetServerSideProps } from 'next'
 import { sanityClient, urlFor } from '../../sanity'
 import { Collection } from '../../typing'
-import { url } from 'inspector'
 import Link from 'next/link'
 
 interface Props {
 	collection: Collection
 }
 
+function NFTDropPage({ collection }: Props) {
 
-function NFTDropPage({collection}: Props) {
-  
 
-// auth
-const connectWithMetamask = useMetamask()
-const address = useAddress()
-const disconnect = useDisconnect()
+	// auth
+	const connectWithMetamask = useMetamask()
+	const address = useAddress()
+	const disconnect = useDisconnect()
 
-console.log(address)
-// 
+	
+
+	//
 	return (
 		<div className='flex h-screen flex-col lg:grid lg:grid-cols-10'>
 			{/* {left} */}
@@ -29,7 +33,7 @@ console.log(address)
 					<div className='rounded-xl bg-gradient-to-br from-yellow-400 to-purple-600 p-2'>
 						<img
 							className='w-44 rounded-xl object-cover lg:h-96 lg:w-72'
-							src={urlFor(collection.previewImage).url()}
+							src={urlFor(collection.mainImage).url()}
 							alt='image'
 						/>
 					</div>
@@ -73,18 +77,20 @@ console.log(address)
 				{/* Content */}
 				<div className='mt-10 flex flex-1 flex-col items-center space-y-6 text-center lg:space-y-0 lg:justify-center'>
 					<img
-						className='w-80 object-cover pb-10 lg:h-40'
-						src={urlFor(collection.mainImage).url()}
+						className=''
+						src={urlFor(collection.previewImage).url()}
 						alt='photo'
 					/>
 
 					<h1 className='text-3xl font-bold lg:tetx-5xl lg:font-extrabold'>
 						{collection.title}
 					</h1>
-					<p className='pt-2 text-xl text-green-500 '>13 / 21 NFT's claimed</p>
+					<p className='pt-2 text-xl text-green-500 '>
+						0 / 21 NFT's claimed
+					</p>
 				</div>
 				{/* Mint Button */}
-				<button className='h-16 bg-gradient-to-br from-cyan-800 to-rose-500 w-full text-white rounded-full mt-10 font-bold'>
+				<button disabled={!address} className='h-16 bg-gradient-to-br from-cyan-800 to-rose-500 w-full text-white rounded-full mt-10 font-bold disabled:bg-gray-400'>
 					Mint NFT (0.01 ETH)
 				</button>
 			</div>
@@ -94,8 +100,8 @@ console.log(address)
 
 export default NFTDropPage
 
-export const getServerSideProps: GetServerSideProps = async({params}) => {
-const query = `*[_type == "collection" && slug.current == $id][0] {
+export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+	const query = `*[_type == "collection" && slug.current == $id][0] {
   _id,
   title,
   address,
@@ -119,16 +125,16 @@ const query = `*[_type == "collection" && slug.current == $id][0] {
     },
   },
 }`
-const collection = await sanityClient.fetch(query, {id:params?.id})
+	const collection = await sanityClient.fetch(query, { id: params?.id })
 
-if (!collection) {
-	return {
-		notFound:true
+	if (!collection) {
+		return {
+			notFound: true,
+		}
 	}
-}
-return {
-	props: {
-		collection,
-	},
-}
+	return {
+		props: {
+			collection,
+		},
+	}
 }
